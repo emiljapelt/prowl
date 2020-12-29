@@ -1,5 +1,5 @@
 # prowl
-__PRO__duct __W__atch __L__ist
+**PRO**duct **W**atch **L**ist
 
 ## Supported webshops
 * pricerunner.dk
