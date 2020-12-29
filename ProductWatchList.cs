@@ -67,6 +67,7 @@ namespace prowl
                     System.Console.WriteLine("Unknown command: " + args[0]);
                     return;
             }
+            System.Console.WriteLine();
         }
 
         public ProductWatchList()
