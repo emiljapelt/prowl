@@ -15,6 +15,7 @@ namespace prowl
             if(args.Length < 1) 
             {
                 System.Console.WriteLine("No command given");
+                System.Console.WriteLine("Use command [help] for a list of available commands");
                 return;
             }
 
@@ -25,7 +26,7 @@ namespace prowl
                 case "add":
                     if(args.Length < 3) 
                     {
-                        System.Console.WriteLine("[Add] needs 2 parameters: <name> <url>");
+                        System.Console.WriteLine("[add] needs 2 parameters: <name> <url>");
                         return;
                     }
                     bool addSucces = pwl.Add(new Product(args[1], args[2]));
@@ -35,7 +36,7 @@ namespace prowl
                 case "delete":
                     if(args.Length < 2)
                     {
-                        System.Console.WriteLine("[Delete] needs 1 parameter: <name>");
+                        System.Console.WriteLine("[delete] needs 1 parameter: <name>");
                         return;
                     }
                     bool deleteSucces = pwl.Delete(args[1]);
@@ -48,7 +49,7 @@ namespace prowl
                 case "check":
                     if(args.Length < 2)
                     {
-                        System.Console.WriteLine("[Check] needs 1 parameter: <name>");
+                        System.Console.WriteLine("[check] needs 1 parameter: <name>");
                         return;
                     }
                     bool checkSucces = pwl.Check(args[1]);
@@ -57,15 +58,23 @@ namespace prowl
                 case "open":
                     if(args.Length < 2)
                     {
-                        System.Console.WriteLine("[Open] needs 1 parameter: <name>");
+                        System.Console.WriteLine("[open] needs 1 parameter: <name>");
                         return;
                     }
                     bool openSucces = pwl.Open(args[1]);
                     if(!openSucces) System.Console.WriteLine("Error: No product with this name");
                     break;
+                case "help":
+                    System.Console.WriteLine("[add] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
+                    System.Console.WriteLine("[delete] <name>: Delete a product saved under the given name, from your watch list");
+                    System.Console.WriteLine("[checkall]: View how the price has changed for each saved product in your watch list");
+                    System.Console.WriteLine("[check] <name>: View how the price has changed for a specific product in your watch list");
+                    System.Console.WriteLine("[open] <name>: View the full url of a specific product in your watch list");
+                    break;
                 default:
                     System.Console.WriteLine("Unknown command: " + args[0]);
-                    return;
+                    System.Console.WriteLine("Use command [help] for a list of available commands");
+                    break;
             }
             System.Console.WriteLine();
         }
