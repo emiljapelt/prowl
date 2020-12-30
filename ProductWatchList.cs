@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace prowl
 {
     class ProductWatchList
     {
         private List<Product> products;
-        string savepath = "D:\\Programmering\\Dev\\prowl\\Products.json";
+        string savepath;// = "D:\\Programmering\\Dev\\prowl\\Products.json";
 
         static void Main(string[] args)
         {
@@ -81,6 +82,9 @@ namespace prowl
 
         public ProductWatchList()
         {
+            var location = new Uri(Assembly.GetEntryAssembly().GetName().CodeBase).LocalPath;
+            savepath = location.Substring(0,location.Length-9) + "prowl_data.json";
+
             if (File.Exists(savepath))
             {
                 using (StreamReader reader = new StreamReader(savepath))
