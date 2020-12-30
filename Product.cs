@@ -21,7 +21,7 @@ namespace prowl
             {
                 price = FindPrice();
             }
-            catch (Exception e)
+            catch
             {
                 price = null;
             }
