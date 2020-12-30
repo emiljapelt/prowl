@@ -30,9 +30,17 @@ namespace prowl
                         System.Console.WriteLine("[add] needs 2 parameters: <name> <url>");
                         return;
                     }
-                    bool addSucces = pwl.Add(new Product(args[1], args[2]));
-                    if(addSucces) System.Console.WriteLine("Succes");
-                    else System.Console.WriteLine("Error: Name already used");
+                    try
+                    {
+                        Product newProduct = new Product(args[1], args[2]);
+                        bool addSucces = pwl.Add(newProduct);
+                        if(addSucces) System.Console.WriteLine("Succes");
+                        else System.Console.WriteLine("Error: Name already used");
+                    }
+                    catch (Exception e)
+                    {
+                        System.Console.WriteLine("Error: " + e.Message);
+                    }
                     break;
                 case "delete":
                     if(args.Length < 2)
