@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System;
 
 namespace Searchers
 {
@@ -25,7 +26,9 @@ namespace Searchers
 
                 string pattern = @"""Price"": (\d+\.\d+),";
                 string data = readStream.ReadToEnd();
-                return float.Parse(Regex.Matches(data, pattern)[0].Groups[1].Value, CultureInfo.InvariantCulture);
+                var matches = Regex.Matches(data, pattern);
+                if (matches.Count == 0) throw new Exception("Non-product page on supported webshop");
+                return float.Parse(matches[0].Groups[1].Value, CultureInfo.InvariantCulture);
             }
             return null;
         }

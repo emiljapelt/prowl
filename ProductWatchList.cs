@@ -9,7 +9,7 @@ namespace prowl
     class ProductWatchList
     {
         private List<Product> products;
-        string savepath;// = "D:\\Programmering\\Dev\\prowl\\Products.json";
+        string savepath;
 
         static void Main(string[] args)
         {

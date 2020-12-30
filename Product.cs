@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Text;
+using System;
 using Searchers;
 
 namespace prowl
@@ -16,7 +17,14 @@ namespace prowl
             this.name = name;
             this.url = url;
             domain = FindDomain();
-            price = FindPrice();
+            try
+            {
+                price = FindPrice();
+            }
+            catch (Exception e)
+            {
+                price = null;
+            }
         }
 
         private string FindDomain()
@@ -29,17 +37,25 @@ namespace prowl
         {
             StringBuilder productInformation = new StringBuilder();
             productInformation.Append(name + " [" + domain + "] : ");
-            if(price != null) productInformation.Append(price + " -> ");
-            else productInformation.Append("No support -> ");
 
-            float? oldPrice = price;
-            price = FindPrice();
-            if(price != null) productInformation.Append(price + " ");
-            else productInformation.Append("No support ");
+            try
+            {
+                float? oldPrice = price;
+                price = FindPrice();
+                if(oldPrice != null) productInformation.Append(price + " -> ");
+                else productInformation.Append("Null -> ");
 
-            if(oldPrice == price) productInformation.Append("STATIC");
-            else if (oldPrice > price) productInformation.Append("DECREASE");
-            else productInformation.Append("INCREASE");
+                if(price != null) productInformation.Append(price + " ");
+                else productInformation.Append("Null ");
+
+                if(oldPrice == price) productInformation.Append("STATIC");
+                else if (oldPrice > price) productInformation.Append("DECREASE");
+                else productInformation.Append("INCREASE");
+            }
+            catch (Exception e)
+            {
+                productInformation.Append(e.Message);
+            }
 
             return productInformation.ToString();
         }
@@ -57,7 +73,7 @@ namespace prowl
                     break;
             }
             if(searcher != null) return searcher.Search(url);
-            else return null;
+            else throw new Exception("Webshop not supported");
         }
     }
 }
