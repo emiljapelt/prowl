@@ -29,7 +29,7 @@ namespace prowl
 
         private string FindDomain()
         {
-            string pattern = @"https:\/\/(.+?)\/.+";
+            string pattern = @"https:\/\/(.+?)\/.*";
             var matches = Regex.Matches(url, pattern);
             if(matches.Count == 0) throw new Exception("Invalid url");
             return matches[0].Groups[1].Value;
