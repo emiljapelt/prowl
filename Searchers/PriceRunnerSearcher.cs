@@ -7,7 +7,7 @@ using System;
 
 namespace Searchers
 {
-    public class PriveRunnerSearcher : ISearcher
+    public class PriceRunnerSearcher : ISearcher
     {
         public float? Search(string url)
         {
