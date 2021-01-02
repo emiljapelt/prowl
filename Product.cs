@@ -10,7 +10,6 @@ namespace prowl
         public string name;
         public string url;
         public string domain;
-        public Webshop? webshop;
         public float? price;
 
         public Product(string name, string url)
@@ -18,7 +17,6 @@ namespace prowl
             this.name = name;
             this.url = url;
             domain = FindDomain();
-            webshop = webshop.GetEnum(domain);
             try
             {
                 price = FindPrice();
@@ -66,8 +64,8 @@ namespace prowl
 
         private float? FindPrice()
         {
-            if (webshop == null) webshop = webshop.GetEnum(domain);
-            ISearcher searcher = webshop.GetSearcher();;
+            ISearcher searcher = null;
+            foreach(var w in Webshop.Values) if(w.Domain == domain) searcher = w.Searcher;
             if(searcher != null) return searcher.Search(url);
             else throw new Exception("Webshop not supported");
         }
