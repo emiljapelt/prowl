@@ -44,7 +44,8 @@ namespace prowl
             {
                 float? oldPrice = price;
                 price = FindPrice();
-                if(oldPrice != null) productInformation.Append(price + " -> ");
+                
+                if(oldPrice != null) productInformation.Append(oldPrice + " -> ");
                 else productInformation.Append("Null -> ");
 
                 if(price != null) productInformation.Append(price + " ");
