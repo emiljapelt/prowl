@@ -17,14 +17,7 @@ namespace prowl
             this.name = name;
             this.url = url;
             domain = FindDomain();
-            try
-            {
-                price = FindPrice();
-            }
-            catch
-            {
-                price = null;
-            }
+            CheckProduct();
         }
 
         private string FindDomain()
@@ -43,17 +36,31 @@ namespace prowl
             try
             {
                 float? oldPrice = price;
-                price = FindPrice();
-                
-                if(oldPrice != null) productInformation.Append(oldPrice + " -> ");
-                else productInformation.Append("Null -> ");
 
-                if(price != null) productInformation.Append(price + " ");
-                else productInformation.Append("Null ");
+                ISearcher searcher = null;
+                foreach(var w in Webshop.Values) if(w.Domain == domain) searcher = w.Searcher;
+                if(searcher == null) productInformation.Append("Webshop not supported");
+                else
+                {
+                    SearchResult searchResult = searcher.Search(url);
 
-                if(oldPrice == price) productInformation.Append("STATIC");
-                else if (oldPrice > price) productInformation.Append("DECREASE");
-                else productInformation.Append("INCREASE");
+                    if (searchResult.IsAvailable is null) productInformation.Append("Non-product page on supported webshop");
+                    else if (!searchResult.IsAvailable ?? false) productInformation.Append("Product not available"); 
+                    else 
+                    {
+                        price = searchResult.Price;
+                        
+                        if(oldPrice != null) productInformation.Append(oldPrice + " -> ");
+                        else productInformation.Append("Null -> ");
+
+                        if(price != null) productInformation.Append(price + " ");
+                        else productInformation.Append("Null ");
+
+                        if(oldPrice == price) productInformation.Append("STATIC");
+                        else if (oldPrice > price) productInformation.Append("DECREASE");
+                        else productInformation.Append("INCREASE");
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -61,14 +68,6 @@ namespace prowl
             }
 
             return productInformation.ToString();
-        }
-
-        private float? FindPrice()
-        {
-            ISearcher searcher = null;
-            foreach(var w in Webshop.Values) if(w.Domain == domain) searcher = w.Searcher;
-            if(searcher != null) return searcher.Search(url);
-            else throw new Exception("Webshop not supported");
         }
     }
 }

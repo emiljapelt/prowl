@@ -9,7 +9,7 @@ namespace Searchers
 {
     public class ProshopSearcher : ISearcher
     {
-        public float? Search(string url)
+        public SearchResult Search(string url)
         {
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             HttpWebResponse response = (HttpWebResponse) request.GetResponse();
@@ -27,22 +27,27 @@ namespace Searchers
                 string pricepattern = @"""Price"": (\d+\.\d+),";
                 string statuspattern = @"<div class=""site-stock-text site-inline"">(.+?)(,|-|–).+<\/div>";
                 string data = readStream.ReadToEnd();
+                SearchResult searchResult = new SearchResult();
 
                 var pricematches = Regex.Matches(data, pricepattern);
-                if (pricematches.Count == 0) throw new Exception("Non-product page on supported webshop");
-
+                if (pricematches.Count == 0) { return searchResult; }
+                
                 var status = Regex.Matches(data, statuspattern)[0].Groups[1].Value;
                 switch(status)
                 {
                     case "På lager ":
+                    case "P&#229; lager ":
                     case "Fjernlager":
+                        searchResult.IsAvailable = true;
                         break;
                     case "Bestillingsvare":
                     case "Bestilt ":
-                        throw new Exception("Product not available");
+                        searchResult.IsAvailable = false;
+                        return searchResult;
                 }
 
-                return float.Parse(pricematches[0].Groups[1].Value, CultureInfo.InvariantCulture);
+                searchResult.Price = float.Parse(pricematches[0].Groups[1].Value, CultureInfo.InvariantCulture);
+                return searchResult;
             }
             return null;
         }
