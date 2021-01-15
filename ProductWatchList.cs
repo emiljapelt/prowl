@@ -57,6 +57,11 @@ namespace prowl
                     else System.Console.WriteLine("Error: No product with this name");
                     break;
                 case "checkall":
+                    if(pwl.products.Count == 0) 
+                    {
+                        System.Console.WriteLine("No products to check");
+                        break;
+                    }
                     pwl.CheckAll();
                     break;
                 case "check":
