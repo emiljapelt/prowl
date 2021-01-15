@@ -4,3 +4,4 @@
 ## Supported webshops
 * pricerunner.dk
 * proshop.dk
+* komplett.dk

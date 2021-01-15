@@ -42,6 +42,10 @@ namespace prowl
                         System.Console.WriteLine("Error: " + e.Message);
                     }
                     break;
+                case "clear":
+                    pwl.Clear();
+                    System.Console.WriteLine("Succes");
+                    break;
                 case "delete":
                     if(args.Length < 2)
                     {
@@ -76,8 +80,9 @@ namespace prowl
                 case "help":
                     System.Console.WriteLine("[add] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
                     System.Console.WriteLine("[delete] <name>: Delete a product saved under the given name, from your watch list");
-                    System.Console.WriteLine("[checkall]: View how the price has changed for each saved product in your watch list");
+                    System.Console.WriteLine("[clear]: Delete all products from your watch list");
                     System.Console.WriteLine("[check] <name>: View how the price has changed for a specific product in your watch list");
+                    System.Console.WriteLine("[checkall]: View how the price has changed for each saved product in your watch list");
                     System.Console.WriteLine("[open] <name>: View the full url of a specific product in your watch list");
                     break;
                 default:
@@ -167,6 +172,12 @@ namespace prowl
                 }
             }
             return false;
+        }
+
+        public void Clear()
+        {
+            products = new List<Product>();
+            Save();
         }
 
         public void Save()
