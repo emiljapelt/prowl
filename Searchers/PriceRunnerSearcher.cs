@@ -24,8 +24,8 @@ namespace Searchers
                 else 
                     readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
 
-                string pricepattern = @"class=""_1GHOTiLjmw _1VgCKncEcl _1081IF0fJa _3QPmcfztEB _3ZcFJUe-1R"">([0-9.]+)";
-                string statuspattern = @"<div aria-label=""(På lager|Ikke på lager|Ukendt lagerstatus)"" class=""_2tE8-5-ApS _2AeDEJjmCK _1rd_Ri2xHf"">";
+                string pricepattern = @"<span currency="".+?"".+?>([0-9\.]+).+?<\/span>";
+                string statuspattern = @"<div aria-label=""(På lager|Ikke på lager|Ukendt lagerstatus)""";
                 string data = readStream.ReadToEnd();
                 SearchResult searchResult = new SearchResult();
 
