@@ -145,7 +145,7 @@ namespace prowl
         {
             foreach(Product product in products)
             {
-                if( product.name.StartsWith(name)) 
+                if( product.name.ToLower().StartsWith(name.ToLower())) 
                 {
                     System.Console.WriteLine(product.name + ": " + product.url);
                     return true;
