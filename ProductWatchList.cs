@@ -56,8 +56,8 @@ namespace prowl
                         System.Console.WriteLine("[remove | rm] needs 1 parameter: <name>");
                         return;
                     }
-                    bool deleteSucces = pwl.Delete(args[1]);
-                    if(deleteSucces) System.Console.WriteLine("Product removed");
+                    bool removeSucces = pwl.Remove(args[1]);
+                    if(removeSucces) System.Console.WriteLine("Product removed");
                     else System.Console.WriteLine($"Error: No product named \"{args[1]}\"");
                     break;
                 case "c":
@@ -163,7 +163,7 @@ namespace prowl
             return true;
         }
 
-        public bool Delete(string name)
+        public bool Remove(string name)
         {
             foreach(Product product in products)
             {
