@@ -16,7 +16,8 @@ namespace prowl
             if(args.Length < 1) 
             {
                 System.Console.WriteLine("No command given");
-                System.Console.WriteLine("Use command [help] for a list of available commands");
+                System.Console.WriteLine("Use command [help | h] for a list of commands");
+                System.Console.WriteLine();
                 return;
             }
 
@@ -24,17 +25,18 @@ namespace prowl
 
             switch(args[0].ToLower())
             {
+                case "a":
                 case "add":
                     if(args.Length < 3) 
                     {
-                        System.Console.WriteLine("[add] needs 2 parameters: <name> <url>");
+                        System.Console.WriteLine("[add | a] needs 2 parameters: <name> <url>");
                         return;
                     }
                     try
                     {
                         Product newProduct = new Product(args[1], args[2]);
                         bool addSucces = pwl.Add(newProduct);
-                        if(addSucces) System.Console.WriteLine("Succes");
+                        if(addSucces) System.Console.WriteLine("Product added");
                         else System.Console.WriteLine("Error: Name already used");
                     }
                     catch (Exception e)
@@ -42,57 +44,59 @@ namespace prowl
                         System.Console.WriteLine("Error: " + e.Message);
                     }
                     break;
+                case "clr":
                 case "clear":
                     pwl.Clear();
-                    System.Console.WriteLine("Succes");
+                    System.Console.WriteLine("List cleared");
                     break;
-                case "delete":
+                case "rm":
+                case "remove":
                     if(args.Length < 2)
                     {
-                        System.Console.WriteLine("[delete] needs 1 parameter: <name>");
+                        System.Console.WriteLine("[remove | rm] needs 1 parameter: <name>");
                         return;
                     }
                     bool deleteSucces = pwl.Delete(args[1]);
-                    if(deleteSucces) System.Console.WriteLine("Succes");
-                    else System.Console.WriteLine("Error: No product with this name");
+                    if(deleteSucces) System.Console.WriteLine("Product removed");
+                    else System.Console.WriteLine($"Error: No product named \"{args[1]}\"");
                     break;
-                case "checkall":
-                    if(pwl.products.Count == 0) 
-                    {
-                        System.Console.WriteLine("No products to check");
-                        break;
-                    }
-                    pwl.CheckAll();
-                    break;
+                case "c":
                 case "check":
-                    if(args.Length < 2)
+                    if(args.Length < 2) 
                     {
-                        System.Console.WriteLine("[check] needs 1 parameter: <name>");
-                        return;
+                        int checks = pwl.Check("");
+                        if (checks == 0) System.Console.WriteLine($"Error: No products in list");
                     }
-                    bool checkSucces = pwl.Check(args[1]);
-                    if(!checkSucces) System.Console.WriteLine("Error: No product with this name");
+                    else 
+                    {
+                        int checks = pwl.Check(args[1]);
+                        if (checks == 0) System.Console.WriteLine($"Error: No products starting with \"{args[1]}\"");
+                    }
                     break;
+                case "o":
                 case "open":
-                    if(args.Length < 2)
+                    if(args.Length < 2) 
                     {
-                        System.Console.WriteLine("[open] needs 1 parameter: <name>");
-                        return;
+                        int opened = pwl.Open("");
+                        if (opened == 0) System.Console.WriteLine($"Error: No products in list");
                     }
-                    bool openSucces = pwl.Open(args[1]);
-                    if(!openSucces) System.Console.WriteLine("Error: No product with this name");
+                    else
+                    {
+                        int opened = pwl.Open(args[1]);
+                        if(opened == 0) System.Console.WriteLine($"Error: No products starting with \"{args[1]}\"");
+                    }
                     break;
+                case "h":
                 case "help":
-                    System.Console.WriteLine("[add] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
-                    System.Console.WriteLine("[delete] <name>: Delete a product saved under the given name, from your watch list");
-                    System.Console.WriteLine("[clear]: Delete all products from your watch list");
-                    System.Console.WriteLine("[check] <name>: View how the price has changed for a specific product in your watch list");
-                    System.Console.WriteLine("[checkall]: View how the price has changed for each saved product in your watch list");
-                    System.Console.WriteLine("[open] <name>: View the full url of a specific product in your watch list");
+                    System.Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
+                    System.Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
+                    System.Console.WriteLine("[clear | clr]: Remove all products from your watch list");
+                    System.Console.WriteLine("[check | c] <name>?: View how the price has changed for products, with names starting with <name>. If <name> is empty, all products are checked");
+                    System.Console.WriteLine("[open | o] <name>?: View the full url of products, with names starting with <name>. If <name> is empty, all products are displayed");
                     break;
                 default:
                     System.Console.WriteLine("Unknown command: " + args[0]);
-                    System.Console.WriteLine("Use command [help] for a list of available commands");
+                    System.Console.WriteLine("Use command [help | h] for a list of available commands");
                     break;
             }
             System.Console.WriteLine();
@@ -117,41 +121,35 @@ namespace prowl
             }
         }
 
-        public void CheckAll()
+        public int Check(string name)
         {
+            int count = 0;
             foreach(Product product in products)
             {
-                System.Console.WriteLine(product.CheckProduct());
-            }
-            Save();
-        }
-
-        public bool Check(string name)
-        {
-            foreach(Product product in products)
-            {
-                if(product.name == name) 
+                if(product.name.ToLower().StartsWith(name.ToLower())) 
                 {
+                    count++;
                     System.Console.WriteLine(product.CheckProduct());
                     Save();
-                    return true;
                 }
             }
             Save();
-            return false;
+            return count;
         }
 
-        public bool Open(string name)
+        public int Open(string name)
         {
+            int count = 0;
             foreach(Product product in products)
             {
-                if( product.name.ToLower().StartsWith(name.ToLower())) 
+                if(product.name.ToLower().StartsWith(name.ToLower())) 
                 {
+                    count++;
                     System.Console.WriteLine(product.name + ": " + product.url);
-                    return true;
+                    System.Console.WriteLine();
                 }
             }
-            return false;
+            return count;
         }
 
         public bool Add(Product product)
