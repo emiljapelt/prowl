@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace prowl
 {
@@ -92,7 +94,7 @@ namespace prowl
                     System.Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
                     System.Console.WriteLine("[clear | clr]: Remove all products from your watch list");
                     System.Console.WriteLine("[check | c] <name>?: View how the price has changed for products, with names starting with <name>. If <name> is empty, all products are checked");
-                    System.Console.WriteLine("[open | o] <name>?: View the full url of products, with names starting with <name>. If <name> is empty, all products are displayed");
+                    System.Console.WriteLine("[open | o] <name>?: Open products, with names starting with <name>, in the default browser. If <name> is empty, all products are opened");
                     break;
                 default:
                     System.Console.WriteLine("Unknown command: " + args[0]);
@@ -145,8 +147,7 @@ namespace prowl
                 if(product.name.ToLower().StartsWith(name.ToLower())) 
                 {
                     count++;
-                    System.Console.WriteLine(product.name + ": " + product.url);
-                    System.Console.WriteLine();
+                    OpenUrl(product.url);
                 }
             }
             return count;
@@ -192,6 +193,36 @@ namespace prowl
             {
                 tw.WriteLine(result);
                 tw.Close();
+            }
+        }
+
+        // https://stackoverflow.com/questions/4580263/how-to-open-in-default-browser-in-c-sharp
+        private void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
     }
