@@ -98,7 +98,7 @@ namespace prowl
                     break;
                 default:
                     System.Console.WriteLine("Unknown command: " + args[0]);
-                    System.Console.WriteLine("Use command [help | h] for a list of available commands");
+                    System.Console.WriteLine("Use command [help | h] for a list of commands");
                     break;
             }
             System.Console.WriteLine();
