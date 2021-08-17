@@ -131,7 +131,10 @@ namespace prowl
                 if(product.name.ToLower().StartsWith(name.ToLower())) 
                 {
                     count++;
-                    System.Console.WriteLine(product.CheckProduct());
+                    var res = product.CheckProduct();
+                    if (res.EndsWith("INCREASE")) ColoredWriteLine(ConsoleColor.Red, res, res.Length - 8, res.Length);
+                    else if (res.EndsWith("DECREASE")) ColoredWriteLine(ConsoleColor.Green, res, res.Length - 8, res.Length);
+                    else Console.WriteLine(res);
                     Save();
                 }
             }
@@ -224,6 +227,15 @@ namespace prowl
                     throw;
                 }
             }
+        }
+
+        private void ColoredWriteLine(ConsoleColor color, string text, int startIndex, int endIndex)
+        {
+            Console.Write(text.Substring(0, startIndex));
+            Console.ForegroundColor = color;
+            Console.Write(text.Substring(startIndex, endIndex - startIndex));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(text.Substring(endIndex, text.Length - endIndex));
         }
     }
 }
