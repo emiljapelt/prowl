@@ -132,9 +132,10 @@ namespace prowl
                 {
                     count++;
                     var res = product.CheckProduct();
-                    if (res.EndsWith("INCREASE")) ColoredWriteLine(ConsoleColor.Red, res, res.Length - 8, res.Length);
-                    else if (res.EndsWith("DECREASE")) ColoredWriteLine(ConsoleColor.Green, res, res.Length - 8, res.Length);
-                    else Console.WriteLine(res);
+                    ColoredWriteLine(res.color, res.text, res.text.Length - 1, res.text.Length);
+                    // if (res.EndsWith("INCREASE")) ColoredWriteLine(ConsoleColor.Red, res, res.Length - 8, res.Length);
+                    // else if (res.EndsWith("DECREASE")) ColoredWriteLine(ConsoleColor.Green, res, res.Length - 8, res.Length);
+                    // else Console.WriteLine(res);
                     Save();
                 }
             }
