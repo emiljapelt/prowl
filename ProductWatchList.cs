@@ -72,7 +72,7 @@ namespace prowl
                 new MethodConstruct {
                     name = "check",
                     shorthand = "c",
-                    args_info = "needs 0 or 1 parameter: <filter>?",
+                    args_info = "takes 0 or 1 parameters: <filter>?",
                     args_check = args => args.Length == 1 || args.Length == 2,
                     method = args => {
                         string filter;
@@ -98,7 +98,7 @@ namespace prowl
                 new MethodConstruct {
                     name = "open",
                     shorthand = "o",
-                    args_info = "needs 0 or 1 parameter: <filter>?",
+                    args_info = "takes 0 or 1 parameters: <filter>?",
                     args_check = args => args.Length == 1 || args.Length == 2,
                     method = args => {
                         string filter;
@@ -121,7 +121,7 @@ namespace prowl
                 new MethodConstruct {
                     name = "add",
                     shorthand = "a",
-                    args_info = "needs 2 parameters: <name> <url>",
+                    args_info = "takes 2 parameters: <name> <url>",
                     args_check = args => args.Length == 3,
                     method = args => {
                         var name = args[1];
@@ -144,7 +144,7 @@ namespace prowl
                 new MethodConstruct {
                     name = "remove",
                     shorthand = "rm",
-                    args_info = "needs 1 parameter: <name>",
+                    args_info = "takes 1 parameter: <name>",
                     args_check = args => args.Length == 2,
                     method = args => {
                         var name = args[1];
