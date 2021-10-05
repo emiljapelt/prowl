@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using Newtonsoft.Json;
 using System.Reflection;
@@ -11,7 +12,8 @@ namespace prowl
     class ProductWatchList
     {
         private List<Product> products;
-        string savepath;
+        private List<MethodConstruct> methods;
+        private string savepath;
 
         static void Main(string[] args)
         {
@@ -25,41 +27,21 @@ namespace prowl
 
             ProductWatchList pwl = new ProductWatchList();
 
-            switch(args[0].ToLower())
+            foreach(MethodConstruct mc in pwl.methods)
             {
-                case "a":
-                case "add":
-                    HandleResult(pwl.Add(args));
-                    break;
-                case "clr":
-                case "clear":
-                    HandleResult(pwl.Clear());
-                    break;
-                case "rm":
-                case "remove":
-                    HandleResult(pwl.Remove(args));
-                    break;
-                case "c":
-                case "check":
-                    HandleResult(pwl.Check(args));
-                    break;
-                case "o":
-                case "open":
-                    HandleResult(pwl.Open(args));
-                    break;
-                case "h":
-                case "help":
-                    Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
-                    Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
-                    Console.WriteLine("[clear | clr]: Remove all products from your watch list");
-                    Console.WriteLine("[check | c] <name>?: View how the price has changed for products, with names starting with <name>. If <name> is empty, all products are checked");
-                    Console.WriteLine("[open | o] <name>?: Open products, with names starting with <name>, in the default browser. If <name> is empty, all products are opened");
-                    break;
-                default:
-                    Console.WriteLine("Unknown command: " + args[0]);
-                    Console.WriteLine("Use command [help | h] for a list of commands");
-                    break;
+                if (args[0] == mc.shorthand || args[0] == mc.name)
+                {
+                    if (!mc.args_check(args)) 
+                    {
+                        Console.WriteLine($"[{mc.name} | {mc.shorthand}] {mc.args_info}");
+                        return;
+                    }
+                    HandleResult(mc.method(args));
+                    return;
+                }
             }
+            Console.WriteLine("Unknown command: " + args[0]);
+            Console.WriteLine("Use command [help | h] for a list of commands");
         }
 
         public ProductWatchList()
@@ -79,90 +61,134 @@ namespace prowl
             {
                 products = new List<Product>();
             }
+
+            methods = initMethodConstructs(this);
         }
 
-        public MethodResult Check(string[] args)
+        public static List<MethodConstruct> initMethodConstructs(ProductWatchList pwl)
         {
-            string filter;
-            try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
+            return new List<MethodConstruct> {
+                // CHECK
+                new MethodConstruct {
+                    name = "check",
+                    shorthand = "c",
+                    args_info = "needs 0 or 1 parameter: <filter>?",
+                    args_check = args => args.Length == 1 || args.Length == 2,
+                    method = args => {
+                        string filter;
+                        try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
 
-            int count = 0;
-            foreach(Product product in products)
-            {
-                if(product.name.ToLower().StartsWith(filter)) 
-                {
-                    count++;
-                    var res = product.CheckProduct();
-                    ColoredWriteLine(res.color, res.text, res.text.Length - 1, res.text.Length);
-                    Save();
+                        int count = 0;
+                        foreach(Product product in pwl.products)
+                        {
+                            if(product.name.ToLower().StartsWith(filter)) 
+                            {
+                                count++;
+                                var res = product.CheckProduct();
+                                ColoredWriteLine(res.color, res.text, res.text.Length - 1, res.text.Length);
+                                pwl.Save();
+                            }
+                        }
+                        pwl.Save();
+                        if (count == 0) return Failure("No products to be checked");
+                        else return Success();
+                    }
+                },
+                // OPEN
+                new MethodConstruct {
+                    name = "open",
+                    shorthand = "o",
+                    args_info = "needs 0 or 1 parameter: <filter>?",
+                    args_check = args => args.Length == 1 || args.Length == 2,
+                    method = args => {
+                        string filter;
+                        try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
+
+                        int count = 0;
+                        foreach(Product product in pwl.products)
+                        {
+                            if(product.name.ToLower().StartsWith(filter)) 
+                            {
+                                count++;
+                                OpenUrl(product.url);
+                            }
+                        }
+                        if (count == 0) return Failure("No products to open");
+                        else return Success();
+                    }
+                },
+                // ADD
+                new MethodConstruct {
+                    name = "add",
+                    shorthand = "a",
+                    args_info = "needs 2 parameters: <name> <url>",
+                    args_check = args => args.Length == 3,
+                    method = args => {
+                        var name = args[1];
+                        var url = args[2];
+
+                        foreach(Product p in pwl.products) if(p.name == name) return Failure("Name already in use");
+                        try
+                        {
+                            pwl.products.Add(new Product(name, url));
+                            pwl.Save();
+                            return Success("Product added");
+                        }
+                        catch (Exception)
+                        {
+                            return Failure("Something went wrong");
+                        }
+                    }
+                },
+                // REMOVE
+                new MethodConstruct {
+                    name = "remove",
+                    shorthand = "rm",
+                    args_info = "needs 1 parameter: <name>",
+                    args_check = args => args.Length == 2,
+                    method = args => {
+                        var name = args[1];
+
+                        foreach(Product product in pwl.products)
+                        {
+                            if(product.name == name) 
+                            {
+                                pwl.products.Remove(product);
+                                pwl.Save();
+                                return Success("Product was removed");
+                            }
+                        }
+                        return Failure($"No product with name \"{name}\"");
+                    }
+                },
+                // CLEAR
+                new MethodConstruct {
+                    name = "clear",
+                    shorthand = "clr",
+                    args_info = "takes 0 parameters",
+                    args_check = args => args.Length == 1,
+                    method = args => {
+                        pwl.products = new List<Product>();
+                        pwl.Save();
+                        return Success("List cleared");
+                    }
+                },
+                // HELP
+                new MethodConstruct {
+                    name = "help",
+                    shorthand = "h",
+                    args_info = "takes 0 parameters",
+                    args_check = args => args.Length == 1,
+                    method = args => {
+                        Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
+                        Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
+                        Console.WriteLine("[clear | clr]: Remove all products from your watch list");
+                        Console.WriteLine("[check | c] <filter>?: View how the price has changed for products, with names starting with <filter>. If <filter> is empty, all products are checked");
+                        Console.WriteLine("[open | o] <filter>?: Open products, with names starting with <filter>, in the default browser. If <filter> is empty, all products are opened");
+                        return Success();
+                    }
                 }
-            }
-            Save();
-            if (count == 0) return Failure("No products to be checked");
-            else return Success();
-        }
-
-        public MethodResult Open(string[] args)
-        {
-            string filter;
-            try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
-
-            int count = 0;
-            foreach(Product product in products)
-            {
-                if(product.name.ToLower().StartsWith(filter)) 
-                {
-                    count++;
-                    OpenUrl(product.url);
-                }
-            }
-            if (count == 0) return Failure("No products to open");
-            else return Success();
-        }
-
-        public MethodResult Add(string[] args)
-        {
-            if(args.Length < 3) return Failure("[add | a] needs 2 parameters: <name> <url>");
-
-            var name = args[1];
-            var url = args[2];
-
-            foreach(Product p in products) if(p.name == name) return Failure("Name already in use");
-            try
-            {
-                products.Add(new Product(name, url));
-                Save();
-                return Success("Product added");
-            }
-            catch (Exception)
-            {
-                return Failure("Something went wrong");
-            }
-        }
-
-        public MethodResult Remove(string[] args)
-        {
-            if(args.Length < 2) return Failure("[remove | rm] needs 1 parameter: <name>");
-
-            var name = args[1];
-
-            foreach(Product product in products)
-            {
-                if(product.name == name) 
-                {
-                    products.Remove(product);
-                    Save();
-                    return Success("Product was removed");
-                }
-            }
-            return Failure($"No product with name \"{name}\"");
-        }
-
-        public MethodResult Clear()
-        {
-            products = new List<Product>();
-            Save();
-            return Success("List cleared");
+            };
         }
 
         public void Save()
@@ -178,7 +204,7 @@ namespace prowl
         }
 
         // https://stackoverflow.com/questions/4580263/how-to-open-in-default-browser-in-c-sharp
-        private void OpenUrl(string url)
+        private static void OpenUrl(string url)
         {
             try
             {
@@ -207,7 +233,7 @@ namespace prowl
             }
         }
 
-        private void ColoredWriteLine(ConsoleColor color, string text, int startIndex, int endIndex)
+        private static void ColoredWriteLine(ConsoleColor color, string text, int startIndex, int endIndex)
         {
             Console.Write(text.Substring(0, startIndex));
             Console.ForegroundColor = color;
@@ -216,9 +242,9 @@ namespace prowl
             Console.WriteLine(text.Substring(endIndex, text.Length - endIndex));
         }
 
-        private MethodResult Success(string msg = "") { return new Success(msg); }
+        private static MethodResult Success(string msg = "") { return new Success(msg); }
 
-        private MethodResult Failure(string msg) { return new Failure(msg); }
+        private static MethodResult Failure(string msg) { return new Failure(msg); }
 
         private static void HandleResult(MethodResult result)
         {
