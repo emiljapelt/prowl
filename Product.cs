@@ -13,6 +13,7 @@ namespace prowl
         public float? price;
         public float? lowest_price;
         public float? highest_price;
+        public DateTime added;
 
         private readonly char up = '\x2191';
         private readonly char down = '\x2193';
@@ -24,6 +25,7 @@ namespace prowl
             this.name = name;
             this.url = url;
             domain = FindDomain();
+            added = DateTime.Now;
             CheckProduct();
         }
 
@@ -37,8 +39,9 @@ namespace prowl
 
         public (string text, ConsoleColor color) CheckProduct()
         {
+            var totaldays = (DateTime.Now - added).TotalDays;
             StringBuilder productInformation = new StringBuilder();
-            productInformation.Append($"{name} [{domain}] : ");
+            productInformation.Append($"{name} [{domain}] w{((int)totaldays)/7} : ");
 
             ConsoleColor color = ConsoleColor.White;
 

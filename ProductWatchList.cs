@@ -29,79 +29,37 @@ namespace prowl
             {
                 case "a":
                 case "add":
-                    if(args.Length < 3) 
-                    {
-                        System.Console.WriteLine("[add | a] needs 2 parameters: <name> <url>");
-                        return;
-                    }
-                    try
-                    {
-                        Product newProduct = new Product(args[1], args[2]);
-                        bool addSucces = pwl.Add(newProduct);
-                        if(addSucces) System.Console.WriteLine("Product added");
-                        else System.Console.WriteLine("Error: Name already used");
-                    }
-                    catch (Exception e)
-                    {
-                        System.Console.WriteLine("Error: " + e.Message);
-                    }
+                    HandleResult(pwl.Add(args));
                     break;
                 case "clr":
                 case "clear":
-                    pwl.Clear();
-                    System.Console.WriteLine("List cleared");
+                    HandleResult(pwl.Clear());
                     break;
                 case "rm":
                 case "remove":
-                    if(args.Length < 2)
-                    {
-                        System.Console.WriteLine("[remove | rm] needs 1 parameter: <name>");
-                        return;
-                    }
-                    bool removeSucces = pwl.Remove(args[1]);
-                    if(removeSucces) System.Console.WriteLine("Product removed");
-                    else System.Console.WriteLine($"Error: No product named \"{args[1]}\"");
+                    HandleResult(pwl.Remove(args));
                     break;
                 case "c":
                 case "check":
-                    if(args.Length < 2) 
-                    {
-                        int checks = pwl.Check("");
-                        if (checks == 0) System.Console.WriteLine($"Error: No products in list");
-                    }
-                    else 
-                    {
-                        int checks = pwl.Check(args[1]);
-                        if (checks == 0) System.Console.WriteLine($"Error: No products starting with \"{args[1]}\"");
-                    }
+                    HandleResult(pwl.Check(args));
                     break;
                 case "o":
                 case "open":
-                    if(args.Length < 2) 
-                    {
-                        int opened = pwl.Open("");
-                        if (opened == 0) System.Console.WriteLine($"Error: No products in list");
-                    }
-                    else
-                    {
-                        int opened = pwl.Open(args[1]);
-                        if(opened == 0) System.Console.WriteLine($"Error: No products starting with \"{args[1]}\"");
-                    }
+                    HandleResult(pwl.Open(args));
                     break;
                 case "h":
                 case "help":
-                    System.Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
-                    System.Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
-                    System.Console.WriteLine("[clear | clr]: Remove all products from your watch list");
-                    System.Console.WriteLine("[check | c] <name>?: View how the price has changed for products, with names starting with <name>. If <name> is empty, all products are checked");
-                    System.Console.WriteLine("[open | o] <name>?: Open products, with names starting with <name>, in the default browser. If <name> is empty, all products are opened");
+                    Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
+                    Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
+                    Console.WriteLine("[clear | clr]: Remove all products from your watch list");
+                    Console.WriteLine("[check | c] <name>?: View how the price has changed for products, with names starting with <name>. If <name> is empty, all products are checked");
+                    Console.WriteLine("[open | o] <name>?: Open products, with names starting with <name>, in the default browser. If <name> is empty, all products are opened");
                     break;
                 default:
-                    System.Console.WriteLine("Unknown command: " + args[0]);
-                    System.Console.WriteLine("Use command [help | h] for a list of commands");
+                    Console.WriteLine("Unknown command: " + args[0]);
+                    Console.WriteLine("Use command [help | h] for a list of commands");
                     break;
             }
-            System.Console.WriteLine();
         }
 
         public ProductWatchList()
@@ -123,69 +81,88 @@ namespace prowl
             }
         }
 
-        public int Check(string name)
+        public MethodResult Check(string[] args)
         {
+            string filter;
+            try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
+
             int count = 0;
             foreach(Product product in products)
             {
-                if(product.name.ToLower().StartsWith(name.ToLower())) 
+                if(product.name.ToLower().StartsWith(filter)) 
                 {
                     count++;
                     var res = product.CheckProduct();
                     ColoredWriteLine(res.color, res.text, res.text.Length - 1, res.text.Length);
-                    // if (res.EndsWith("INCREASE")) ColoredWriteLine(ConsoleColor.Red, res, res.Length - 8, res.Length);
-                    // else if (res.EndsWith("DECREASE")) ColoredWriteLine(ConsoleColor.Green, res, res.Length - 8, res.Length);
-                    // else Console.WriteLine(res);
                     Save();
                 }
             }
             Save();
-            return count;
+            if (count == 0) return Failure("No products to be checked");
+            else return Success();
         }
 
-        public int Open(string name)
+        public MethodResult Open(string[] args)
         {
+            string filter;
+            try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
+
             int count = 0;
             foreach(Product product in products)
             {
-                if(product.name.ToLower().StartsWith(name.ToLower())) 
+                if(product.name.ToLower().StartsWith(filter)) 
                 {
                     count++;
                     OpenUrl(product.url);
                 }
             }
-            return count;
+            if (count == 0) return Failure("No products to open");
+            else return Success();
         }
 
-        public bool Add(Product product)
+        public MethodResult Add(string[] args)
         {
-            foreach(Product p in products)
+            if(args.Length < 3) return Failure("[add | a] needs 2 parameters: <name> <url>");
+
+            var name = args[1];
+            var url = args[2];
+
+            foreach(Product p in products) if(p.name == name) return Failure("Name already in use");
+            try
             {
-                if(p.name == product.name) return false;
+                products.Add(new Product(name, url));
+                Save();
+                return Success("Product added");
             }
-            products.Add(product);
-            Save();
-            return true;
+            catch (Exception)
+            {
+                return Failure("Something went wrong");
+            }
         }
 
-        public bool Remove(string name)
+        public MethodResult Remove(string[] args)
         {
+            if(args.Length < 2) return Failure("[remove | rm] needs 1 parameter: <name>");
+
+            var name = args[1];
+
             foreach(Product product in products)
             {
                 if(product.name == name) 
                 {
                     products.Remove(product);
                     Save();
-                    return true;
+                    return Success("Product was removed");
                 }
             }
-            return false;
+            return Failure($"No product with name \"{name}\"");
         }
 
-        public void Clear()
+        public MethodResult Clear()
         {
             products = new List<Product>();
             Save();
+            return Success("List cleared");
         }
 
         public void Save()
@@ -237,6 +214,16 @@ namespace prowl
             Console.Write(text.Substring(startIndex, endIndex - startIndex));
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(text.Substring(endIndex, text.Length - endIndex));
+        }
+
+        private MethodResult Success(string msg = "") { return new Success(msg); }
+
+        private MethodResult Failure(string msg) { return new Failure(msg); }
+
+        private static void HandleResult(MethodResult result)
+        {
+            if (result is Failure) Console.WriteLine($"Failure: {result.Message}");
+            else Console.WriteLine(result.Message);
         }
     }
 }
