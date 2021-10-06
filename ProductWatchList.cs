@@ -31,9 +31,9 @@ namespace prowl
             {
                 if (args[0] == mc.shorthand || args[0] == mc.name)
                 {
-                    if (!mc.args_check(args)) 
+                    if (!mc.params_check(args)) 
                     {
-                        Console.WriteLine($"[{mc.name} | {mc.shorthand}] {mc.args_info}");
+                        Console.WriteLine($"[{mc.name} | {mc.shorthand}] {mc.params_info}");
                         return;
                     }
                     HandleResult(mc.method(args));
@@ -72,8 +72,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "check",
                     shorthand = "c",
-                    args_info = "takes 0 or 1 parameters: <filter>?",
-                    args_check = args => args.Length == 1 || args.Length == 2,
+                    params_info = "takes 0 or 1 parameters: <filter>?",
+                    params_check = args => args.Length == 1 || args.Length == 2,
                     method = args => {
                         string filter;
                         try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
@@ -98,8 +98,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "open",
                     shorthand = "o",
-                    args_info = "takes 0 or 1 parameters: <filter>?",
-                    args_check = args => args.Length == 1 || args.Length == 2,
+                    params_info = "takes 0 or 1 parameters: <filter>?",
+                    params_check = args => args.Length == 1 || args.Length == 2,
                     method = args => {
                         string filter;
                         try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
@@ -121,8 +121,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "add",
                     shorthand = "a",
-                    args_info = "takes 2 parameters: <name> <url>",
-                    args_check = args => args.Length == 3,
+                    params_info = "takes 2 parameters: <name> <url>",
+                    params_check = args => args.Length == 3,
                     method = args => {
                         var name = args[1];
                         var url = args[2];
@@ -144,8 +144,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "remove",
                     shorthand = "rm",
-                    args_info = "takes 1 parameter: <name>",
-                    args_check = args => args.Length == 2,
+                    params_info = "takes 1 parameter: <name>",
+                    params_check = args => args.Length == 2,
                     method = args => {
                         var name = args[1];
 
@@ -165,8 +165,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "clear",
                     shorthand = "clr",
-                    args_info = "takes 0 parameters",
-                    args_check = args => args.Length == 1,
+                    params_info = "takes 0 parameters",
+                    params_check = args => args.Length == 1,
                     method = args => {
                         pwl.products = new List<Product>();
                         pwl.Save();
@@ -177,8 +177,8 @@ namespace prowl
                 new MethodConstruct {
                     name = "help",
                     shorthand = "h",
-                    args_info = "takes 0 parameters",
-                    args_check = args => args.Length == 1,
+                    params_info = "takes 0 parameters",
+                    params_check = args => args.Length == 1,
                     method = args => {
                         Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
                         Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");

@@ -7,8 +7,8 @@ namespace prowl
     {
         public string name { get; set; }
         public string shorthand { get; set; }
-        public string args_info { get; set; }
-        public Predicate<string[]> args_check { get; set; }
+        public string params_info { get; set; }
+        public Predicate<string[]> params_check { get; set; }
         public Method method { get; set; }
     }
 }
