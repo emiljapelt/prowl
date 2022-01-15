@@ -1,5 +1,4 @@
 using System.Net;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
@@ -8,7 +7,7 @@ namespace Searchers
 {
     public class ProshopSearcher : ISearcher
     {
-        public SearchResult Search(string url)
+        public async Task<SearchResult> Search(string url)
         {
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             HttpWebResponse response = (HttpWebResponse) request.GetResponse();

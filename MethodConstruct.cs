@@ -1,8 +1,7 @@
-using System;
 
 namespace prowl
 {
-    public delegate MethodResult Method(string[] args);
+    public delegate Task<MethodResult> Method(string[] args);
     public class MethodConstruct
     {
         public string name { get; set; }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Reflection;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -15,7 +11,7 @@ namespace prowl
         private List<MethodConstruct> methods;
         private string savepath;
 
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             if(args.Length < 1) 
             {
@@ -36,7 +32,7 @@ namespace prowl
                         Console.WriteLine($"[{mc.name} | {mc.shorthand}] {mc.params_info}");
                         return;
                     }
-                    HandleResult(mc.method(args));
+                    HandleResult(await mc.method(args));
                     return;
                 }
             }
@@ -74,7 +70,7 @@ namespace prowl
                     shorthand = "c",
                     params_info = "takes 0 or 1 parameters: <filter>?",
                     params_check = args => args.Length == 1 || args.Length == 2,
-                    method = args => {
+                    method = async args => {
                         string filter;
                         try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
 
@@ -84,7 +80,7 @@ namespace prowl
                             if(product.name.ToLower().StartsWith(filter)) 
                             {
                                 count++;
-                                var res = product.CheckProduct();
+                                var res = await product.CheckProduct();
                                 ColoredWriteLine(res.color, res.text, res.text.Length - 1, res.text.Length);
                                 pwl.Save();
                             }
@@ -100,7 +96,7 @@ namespace prowl
                     shorthand = "o",
                     params_info = "takes 0 or 1 parameters: <filter>?",
                     params_check = args => args.Length == 1 || args.Length == 2,
-                    method = args => {
+                    method = async args => {
                         string filter;
                         try { filter = args[1].ToLower(); } catch (Exception) { filter = ""; }
 
@@ -123,7 +119,7 @@ namespace prowl
                     shorthand = "a",
                     params_info = "takes 2 parameters: <name> <url>",
                     params_check = args => args.Length == 3,
-                    method = args => {
+                    method = async args => {
                         var name = args[1];
                         var url = args[2];
 
@@ -146,7 +142,7 @@ namespace prowl
                     shorthand = "rm",
                     params_info = "takes 1 parameter: <name>",
                     params_check = args => args.Length == 2,
-                    method = args => {
+                    method = async args => {
                         var name = args[1];
 
                         foreach(Product product in pwl.products)
@@ -167,7 +163,7 @@ namespace prowl
                     shorthand = "clr",
                     params_info = "takes 0 parameters",
                     params_check = args => args.Length == 1,
-                    method = args => {
+                    method = async args => {
                         pwl.products = new List<Product>();
                         pwl.Save();
                         return Success("List cleared");
@@ -179,7 +175,7 @@ namespace prowl
                     shorthand = "h",
                     params_info = "takes 0 parameters",
                     params_check = args => args.Length == 1,
-                    method = args => {
+                    method = async args => {
                         Console.WriteLine("[add | a] <name> <url>: Add a product from an url to your watch list, saving it with the given name");
                         Console.WriteLine("[remove | rm] <name>: Remove a product saved under the given name, from your watch list");
                         Console.WriteLine("[clear | clr]: Remove all products from your watch list");

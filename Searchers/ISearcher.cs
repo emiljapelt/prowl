@@ -3,6 +3,6 @@ namespace Searchers
 {
     public interface ISearcher
     {
-        public SearchResult Search(string url);
+        public Task<SearchResult> Search(string url);
     }
 }

@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using System.Text;
-using System;
 using Searchers;
 
 namespace prowl
@@ -37,7 +36,7 @@ namespace prowl
             return matches[0].Groups[1].Value;
         }
 
-        public (string text, ConsoleColor color) CheckProduct()
+        public async Task<(string text, ConsoleColor color)> CheckProduct()
         {
             var totaldays = (DateTime.Now - added).TotalDays;
             StringBuilder productInformation = new StringBuilder();
@@ -54,7 +53,7 @@ namespace prowl
                 if(searcher == null) productInformation.Append("Webshop not supported");
                 else
                 {
-                    SearchResult searchResult = searcher.Search(url);
+                    SearchResult searchResult = await searcher.Search(url);
 
                     if (searchResult.IsAvailable is null) productInformation.Append("Non-product page on supported webshop");
                     else if (!searchResult.IsAvailable ?? false) productInformation.Append("Product not available"); 
