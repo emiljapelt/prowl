@@ -9,30 +9,23 @@ namespace Searchers
         public async Task<SearchResult> Search(string url)
         {
             var doc = await WebInterface.GetDocument(url);
-
             if (doc is null) return null;
-
-            string pricepattern = @"<span currency="".+?"".+?>([0-9\.]+).+?<\/span>";
-            string statuspattern = @"<div aria-label=""(På lager|Ikke på lager|Ukendt lagerstatus)""";
 
             SearchResult searchResult = new SearchResult();
 
-            int i = 0;
-            var statusmatches = Regex.Matches(doc, statuspattern);
-            var pricematches = Regex.Matches(doc, pricepattern);
-            if (pricematches.Count == 0) { return searchResult; }
+            var matches = Regex.Matches(doc, @"aria-label=""(På lager|Ikke på lager|Ukendt lagerstatus)"".*?>([0-9.]+) <span.*?kr\.");
 
-            foreach(Match m in statusmatches)
-            {
-                if(m.Groups[1].Value != "På lager") i++;
-                else break;
+            if (matches.Count == 0) return searchResult;
+
+            searchResult.IsAvailable = false;
+
+            foreach(Match m in matches) {
+                searchResult.Price = float.Parse(Regex.Replace(m.Groups[2].Value, @"\.", ""));
+                if (m.Groups[1].Value == "På lager") {
+                    searchResult.IsAvailable = true;
+                    return searchResult;
+                }
             }
-            if (i == statusmatches.Count) { searchResult.IsAvailable = false; return searchResult; }
-            else searchResult.IsAvailable = true;
-
-            string price = pricematches[i].Groups[1].Value;
-            string cleanprice = Regex.Replace(price, @"\.", "");
-            searchResult.Price = float.Parse(cleanprice);
             return searchResult;
         }
     }
