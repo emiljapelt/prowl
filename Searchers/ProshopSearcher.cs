@@ -1,5 +1,3 @@
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
 
@@ -9,45 +7,34 @@ namespace Searchers
     {
         public async Task<SearchResult> Search(string url)
         {
-            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
-            HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+            var doc = await WebInterface.GetDocument(url);
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (doc is null) return null;
+
+            string pricepattern = @"""Price"": (\d+\.\d+),";
+            string statuspattern = @"<div class=""site-stock-text site-inline"">(.+?)(,|-|–).+<\/div>";
+            
+            var searchResult = new SearchResult();
+
+            var pricematches = Regex.Matches(doc, pricepattern);
+            if (pricematches.Count == 0) return searchResult;
+
+            var status = Regex.Matches(doc, statuspattern)[0].Groups[1].Value;
+            switch(status)
             {
-                Stream receiveStream = response.GetResponseStream();
-                StreamReader readStream = null;
-
-                if (string.IsNullOrWhiteSpace(response.CharacterSet))
-                    readStream = new StreamReader(receiveStream);
-                else 
-                    readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
-
-                string pricepattern = @"""Price"": (\d+\.\d+),";
-                string statuspattern = @"<div class=""site-stock-text site-inline"">(.+?)(,|-|–).+<\/div>";
-                string data = readStream.ReadToEnd();
-                SearchResult searchResult = new SearchResult();
-
-                var pricematches = Regex.Matches(data, pricepattern);
-                if (pricematches.Count == 0) { return searchResult; }
-                
-                var status = Regex.Matches(data, statuspattern)[0].Groups[1].Value;
-                switch(status)
-                {
-                    case "På lager ":
-                    case "P&#229; lager ":
-                    case "Fjernlager":
-                        searchResult.IsAvailable = true;
-                        break;
-                    case "Bestillingsvare":
-                    case "Bestilt ":
-                        searchResult.IsAvailable = false;
-                        return searchResult;
-                }
-
-                searchResult.Price = float.Parse(pricematches[0].Groups[1].Value, CultureInfo.InvariantCulture);
-                return searchResult;
+                case "På lager ":
+                case "P&#229; lager ":
+                case "Fjernlager":
+                    searchResult.IsAvailable = true;
+                    break;
+                case "Bestillingsvare":
+                case "Bestilt ":
+                    searchResult.IsAvailable = false;
+                    return searchResult;
             }
-            return null;
+
+            searchResult.Price = float.Parse(pricematches[0].Groups[1].Value, CultureInfo.InvariantCulture);
+            return searchResult;
         }
     }
 }
